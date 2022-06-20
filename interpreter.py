@@ -52,7 +52,7 @@ class Interpreter:
         if word == 'foreach':
             return self.__foreach()
         if word in functions.f_summary.keys():
-            if self.__index == len(self.__expr) - 1:
+            if self.__index == len(self.__expr) - 1 and word != 'help':
                 return functions.f_summary[word][0]
             return self.__call_funct(functions.f_summary[word])
 
