@@ -1,13 +1,20 @@
 from __future__ import annotations
+from functools import total_ordering
+
+import functions
 
 
+@total_ordering
 class Variable:
     def __init__(self, symbol: str, value):
         self.__symbol = symbol
-        self.__value = value
+        if type(value) == functions.Ans:
+            self.__value = value.value
+        else:
+            self.__value = value
 
-    # def __iter__(self):
-    #    iter(self.__value)
+    def __iter__(self):
+        return iter(self.__value)
 
     def __add__(self, other: Variable) -> Variable:
         return Variable(self.symbol + '_add_' + other.symbol, self.value + other.value)
@@ -22,6 +29,12 @@ class Variable:
         if other.value == 0:
             raise Exception("Can't divide by 0")
         return Variable(self.symbol + '/' + other.symbol, int(self.value / other.value))
+
+    def __eq__(self, other: Variable):
+        return self.__value == other.value
+
+    def __lt__(self, other: Variable):
+        return self.__value < other.value
 
     def __neg__(self) -> Variable:
         return Variable("-" + self.symbol, -1 * self.value)
@@ -44,6 +57,7 @@ class Variable:
 
 class VariableContainerIterator:
     """iterator class"""
+
     def __init__(self, variable_container: VariableContainer):
         self.__vars = variable_container
         self.__index: int = 0
@@ -57,14 +71,15 @@ class VariableContainerIterator:
 
 class VariableContainer:
     """container with declared variables"""
+
     def __init__(self):
         self.__container: list[Variable] = []
-        self.__last_asked: Variable = None
+        self.__last_asked: Variable
 
     def __contains__(self, item: str) -> bool:
         self.__last_asked = None
         for var in self.__container:
-            if var.symbol == item:
+            if item == var.symbol:
                 self.__last_asked = var
                 return True
         return False

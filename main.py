@@ -3,6 +3,7 @@ import interpreter
 if __name__ == '__main__':
     tmp = ''
     expr = interpreter.Interpreter()
-    while tmp != 'exit':
+    while tmp.lower() != 'exit':
         tmp = input()
-        expr.eval(tmp)
+        if tmp.lower() != 'exit':
+            expr.eval(tmp)

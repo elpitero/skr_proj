@@ -1,4 +1,7 @@
-from typing import TypeVar, Callable, Any, Tuple, Sequence
+from typing import TypeVar, Callable, Any, Sequence, Tuple
+
+from sympy import ntheory
+import variable
 from variable import Variable, VariableContainer
 import numpy as np
 
@@ -6,17 +9,44 @@ A = TypeVar('A')
 B = TypeVar('B')
 
 
+class Ans:
+    def __init__(self):
+        self.__value = None
+
+    @property
+    def value(self) -> Any:
+        if type(self.__value) == variable.Variable:
+            return self.__value.value
+        return self.__value
+
+    @value.setter
+    def value(self, value: Any):
+        if type(value) == Ans:
+            self.__value = value.value
+        else:
+            self.__value = value
+
+    def __str__(self):
+        return str(self.__value)
+
+
 def f_eval(eq: str) -> Any:
     """evaluates given expression"""
+    d = {x.symbol: int(x.value) for x in f_variables}
+    d['ans'] = f_ans.value
     try:
-        return eval(eq, {x.symbol: int(x.value) for x in f_variables})
+        return eval(eq, d)
     except NameError:
         print("Sorry, I can't evaluate this expression")
         return ""
 
 
-def f_set(name: str, value) -> Variable:
+def f_set(name, value) -> Variable:
     """sets new variable"""
+    if type(name) == variable.Variable:
+        name = name.symbol
+    if type(value) == variable.Variable:
+        value = value.value
     try:
         tmp = Variable(name, f_eval(value))
     except (TypeError, ValueError) as e:
@@ -27,13 +57,21 @@ def f_set(name: str, value) -> Variable:
 
 def f_print(value: A) -> A:
     """prints given value"""
-    print(value)
+    if type(value) == str:
+        print(f_eval(value))
+    else:
+        print(value)
     return value
 
 
-def f_for(values: Sequence[A], function: Callable[[A], B]) -> list[B]:
+def f_prime(value: A, other) -> bool:
+    num = int(value)
+    return ntheory.isprime(num)
+
+
+def f_for(values: Sequence[A], function: Callable[[A, Any], B], other: Any) -> list[B]:
     """calls given function for each value in values"""
-    return [function(x) for x in values]
+    return [x for x in values if function(x, other)]
 
 
 def f_length(values: Sequence[A]) -> int:
@@ -47,6 +85,7 @@ def f_contains(values: Sequence[A], item: A) -> bool:
 
 
 def f_dist(s1: str, s2: str) -> int:
+    """hi"""
     d = np.zeros((len(s1) + 1, len(s2) + 1), dtype=np.int8)  # len(s1) rows, len(s2) columns
     for i in range(1, len(s1) + 1):
         d[i, 0] = i
@@ -95,30 +134,40 @@ def f_leq(item: A, other: A) -> bool:
 
 
 def f_range(start: A, stop: A, step: A):
+    """hi"""
     return range(int(start), int(stop), int(step))
 
 
-# def f_if(item: A, condition: Callable[[Any, Any], bool] = f_neq, other: A = None):
-#    if condition(item, other)
+def f_mod(value: A, v2: A) -> int:
+    return int(value) % int(v2)
+
+
+def f_help():
+    """hi"""
+    for fun in f_summary.keys():
+        print(fun + ' ' + f_summary[fun][0].__doc__)
+
 
 f_variables = VariableContainer()
-f_summary: dict[str, Tuple[Callable[[Any], Any], int, list[str]]] = {'set': (f_set, 2, ['str_raw', 'any']),
-                                                                     'print': (f_print, 1, ['any']),
-                                                                     'show': (f_print, 1, ['any']),
-                                                                     'for': (f_for, 2, ['data', 'funct_raw']),
-                                                                     'length': (f_length, 1, ['data']),
-                                                                     'contains': (f_contains, 2, ['data', 'any']),
-                                                                     'dist': (f_dist, 2, ['str', 'str']),
-                                                                     'eval': (f_eval, 1, ['str']),
-                                                                     'equal': (f_eq, 2, ['any', 'any']),
-                                                                     'eq': (f_eq, 2, ['any', 'any']),
-                                                                     '==': (f_eq, 2, ['any', 'any']),
-                                                                     'greater': (f_gt, 2, ['any', 'any']),
-                                                                     '>': (f_gt, 2, ['any', 'any']),
-                                                                     'less': (f_lt, 2, ['any', 'any']),
-                                                                     '<': (f_lt, 2, ['any', 'any']),
-                                                                     '>=': (f_geq, 2, ['any', 'any']),
-                                                                     '<=': (f_leq, 2, ['any', 'any']),
-                                                                     'not': (f_neq, 2, ['any', 'any']),
-                                                                     '!=': (f_neq, 2, ['any', 'any']),
-                                                                     'range': (f_range, 3, ['int', 'int', 'int'])}
+f_ans = Ans()
+f_summary: dict[str, Tuple[Callable[[Any], Any], Tuple[int, int]], int] = {'help': (f_help, 0),
+                                                                           'set': (f_set, 2),
+                                                                           'print': (f_print, 1),
+                                                                           'show': (f_print, 1),
+                                                                           'foreach': (f_for, 3),
+                                                                           'length': (f_length, 1),
+                                                                           'contains': (f_contains, 2),
+                                                                           'eval': (f_eval, 1),
+                                                                           'equal': (f_eq, 2),
+                                                                           'eq': (f_eq, 2),
+                                                                           '==': (f_eq, 2),
+                                                                           'greater': (f_gt, 2),
+                                                                           '>': (f_gt, 2),
+                                                                           'less': (f_lt, 2),
+                                                                           '<': (f_lt, 2),
+                                                                           '>=': (f_geq, 2),
+                                                                           '<=': (f_leq, 2),
+                                                                           '!=': (f_neq, 2),
+                                                                           'range': (f_range, 3),
+                                                                           'prime': (f_prime, 1),
+                                                                           '%': (f_mod, 2)}
