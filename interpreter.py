@@ -1,8 +1,9 @@
 import functions
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar, Sequence
 import shlex
 
-import variable
+A = TypeVar('A')
+B = TypeVar('B')
 
 digits = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
@@ -47,7 +48,9 @@ class Interpreter:
         if word in self.__keywords.keys():
             return self.__keywords[word]
         if word == 'for':
-            self.__for()
+            return self.__for()
+        if word == 'foreach':
+            return self.__foreach()
         if word in functions.f_summary.keys():
             if self.__index == len(self.__expr) - 1:
                 return functions.f_summary[word][0]
@@ -57,8 +60,7 @@ class Interpreter:
 
     def __call_funct(self, function: (Callable[[Any], Any], int)) -> Any:
         """calls function from 'functions.py'"""
-        # return function[0](*[self.__eval() for i in range(0, function[1])])
-        print([self.__eval() for i in range(0, function[1])])
+        return function[0](*[self.__eval() for i in range(0, function[1])])
 
     def __for(self):
         end = int(self.__eval())
@@ -70,6 +72,24 @@ class Interpreter:
             while result is not None:
                 result = self.__eval()
         return result
+
+    def __foreach(self) -> list[B]:
+        """"""
+        values = self.__eval()
+
+        if self.__index + 1 < len(self.__expr):
+            comparator = functions.f_summary[self.__expr[self.__index+1]][0]
+        else:
+            return []
+        self.__index += 1
+        other = self.__eval()
+        if self.__index + 1 < len(self.__expr):
+            if self.__expr[self.__index+1].lower() in functions.f_summary.keys():
+                function = functions.f_summary[self.__expr[self.__index+1]][0]
+                self.__index += 1
+                arg = self.__eval()
+                return [x for x in values if comparator(function(x, arg), other)]
+        return [x for x in values if comparator(x, other)]
 
 
 if __name__ == '__main__':

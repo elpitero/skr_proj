@@ -30,7 +30,7 @@ def test3(monkeypatch):
     expr = Interpreter()
     monkeypatch.setattr('builtins.input', lambda _: "set a = range 10 100 1")
     expr.eval(input("hi"))
-    monkeypatch.setattr('builtins.input', lambda _: "foreach a % 9")
+    monkeypatch.setattr('builtins.input', lambda _: "foreach a == 0 % 9")
     expr.eval(input("hi"))
     monkeypatch.setattr('builtins.input', lambda _: "print ans")
     assert expr.eval(input("hi")) == '[18, 27, 36, 45, 54, 63, 72, 81, 90, 99]'

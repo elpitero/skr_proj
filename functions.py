@@ -69,11 +69,6 @@ def f_prime(value: A, other) -> bool:
     return ntheory.isprime(num)
 
 
-def f_for(values: Sequence[A], function: Callable[[A, Any], B], other: Any) -> list[B]:
-    """calls given function for each value in values"""
-    return [x for x in values if function(x, other)]
-
-
 def f_length(values: Sequence[A]) -> int:
     """calculates length of a list"""
     return len(values)
@@ -105,31 +100,43 @@ def f_dist(s1: str, s2: str) -> int:
 
 def f_lt(item: A, other: A) -> bool:
     """returns True if item < other"""
+    if type(item) != variable.Variable:
+        return item < type(item)(other)
     return item < other
 
 
 def f_gt(item: A, other: A) -> bool:
     """returns True if item > other"""
+    if type(item) != variable.Variable:
+        return item > type(item)(other)
     return item > other
 
 
 def f_eq(item: A, other: A) -> bool:
     """returns True if item == other"""
+    if type(item) != variable.Variable:
+        return item == type(item)(other)
     return item == other
 
 
 def f_neq(item: A, other: A) -> bool:
     """returns True if item != other"""
+    if type(item) != variable.Variable:
+        return item != type(item)(other)
     return item != other
 
 
 def f_geq(item: A, other: A) -> bool:
     """returns True if item >= other"""
+    if type(item) != variable.Variable:
+        return item >= type(item)(other)
     return item >= other
 
 
 def f_leq(item: A, other: A) -> bool:
     """returns True if item <= other"""
+    if type(item) != variable.Variable:
+        return item <= type(item)(other)
     return item <= other
 
 
@@ -154,8 +161,8 @@ f_summary: dict[str, Tuple[Callable[[Any], Any], Tuple[int, int]], int] = {'help
                                                                            'set': (f_set, 2),
                                                                            'print': (f_print, 1),
                                                                            'show': (f_print, 1),
-                                                                           'foreach': (f_for, 3),
                                                                            'length': (f_length, 1),
+                                                                           'len': (f_length, 1),
                                                                            'contains': (f_contains, 2),
                                                                            'eval': (f_eval, 1),
                                                                            'equal': (f_eq, 2),
